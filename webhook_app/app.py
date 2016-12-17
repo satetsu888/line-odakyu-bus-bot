@@ -8,7 +8,7 @@ from linebot.exceptions import (
     InvalidSignatureError
 )
 from linebot.models import (
-    MessageEvent, TextMessage, LocationMessage, TextSendMessage,
+    MessageEvent, TextMessage, LocationMessage, TextSendMessage, StickerMessage,
     FollowEvent,
 )
 
@@ -45,7 +45,15 @@ def callback():
 
 
 @handler.add(MessageEvent, message=TextMessage)
-def handle_message(event):
+def handle_text_message(event):
+    response_bus_data(event)
+
+
+@handler.add(MessageEvent, message=StickerMessage)
+def handle_sticker_message(event):
+    response_bus_data(event)
+
+def response_bus_data(event):
     bus_data = fetch_bus_data()
     if bus_data is None:
         line_bot_api.reply_message(
