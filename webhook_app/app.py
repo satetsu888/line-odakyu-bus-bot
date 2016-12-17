@@ -46,7 +46,14 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    bus_text = build_bus_text(fetch_bus_data(), limit=2)
+    bus_data = fetch_bus_data()
+    if bus_data is None:
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text='本日の運行は終了しました'))
+        return
+
+    bus_text = build_bus_text(bus_data, limit=2)
     line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(text=bus_text))
@@ -65,6 +72,8 @@ def fetch_bus_data():
     body = response.read()
     soup = BeautifulSoup(body)
     result_div = soup.find('div', {'class': 'resultBox'})
+    if result_div is None:
+        return None
     # print(result_div)
     time = result_div.find('p', {'class': 'time'})
     # print(time.string)
