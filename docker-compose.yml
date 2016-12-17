@@ -1,0 +1,10 @@
+version: '2'
+services:
+  webhook_app:
+    build: .
+    ports:
+      - "6000:5000"
+    environment:
+      - CHANNEL_ACCESS_TOKEN
+      - CHANNEL_SECRET
+    command: "webhook_app"
