@@ -44,7 +44,7 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
-    response_bus_data(event)
+    response_pole_data(event)
 
 
 @handler.add(MessageEvent, message=StickerMessage)
@@ -63,6 +63,12 @@ def response_bus_data(event):
     line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(text=bus_text))
+
+def response_pole_data(event):
+    text = event.message.text
+
+    pole_data = bus.search_pole(text)
+
 
 
 

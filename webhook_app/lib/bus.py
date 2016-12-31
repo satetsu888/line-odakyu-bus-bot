@@ -1,5 +1,6 @@
+import re
 from bs4 import BeautifulSoup
-from urllib import request
+from urllib import request, parse
 
 def build_bus_text(bus_data, limit):
     head = '{time}\n{pole}\n'.format(**bus_data)
@@ -45,3 +46,41 @@ def fetch_bus_data():
         'pole': pole.string,
         'bus': bus,
         }
+
+def search_pole(query):
+    poles = []
+
+    url = 'http://www.odakyubus-navi.com/blsys/loca?VID=ssp&EID=nt&ARK=9&DSN={}'.format(parse.quote_plus(query, encoding='sjis'))
+    # print(url)
+    response = request.urlopen(url)
+    body = response.read()
+    # print(body)
+    soup = BeautifulSoup(body)
+
+    # find result script
+    result_script_pattern = re.compile('document.SubmitForm.DSMK.value = "(?P<DSMK>\d+)"')
+    result_script = soup.find(string=result_script_pattern)
+    # print(result_script)
+    if result_script is not None:
+        match = re.search(result_script_pattern, result_script.string)
+        code = match.groupdict()['DSMK']
+        poles.append({
+            'name': query, # not accurate :(
+            'code': code,
+            })
+    else:
+        # find select box
+        result_select = soup.find('select', {'class': 'fs110'})
+        # print(result_select.string)
+        options = result_select.find_all('option')
+        for option in options:
+            # print(option.string)
+            poles.append({
+                'name': option.string,
+                'code': option['value'],
+                })
+
+    return {
+        'query': query,
+        'poles': poles,
+    }
